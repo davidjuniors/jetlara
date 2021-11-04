@@ -1,7 +1,12 @@
 <template>
 <div>
     <jet-label v-if="label" :for="id" :value="label" />
-    <input :id="id" :class="classes + extraclass" :type="type" v-money3="config" v-bind="$attrs" :value="modelValue" @input="$emit('update:modelValue', $event.target.value)" ref="input" />
+    <money3
+        v-model.number="amount"
+        v-bind="config"
+        :id="id"
+        :class="classes + extraclass"
+    />
     <jet-input-error v-if="error" :message="error" class="mt-2" />
 </div>
 </template>
@@ -10,13 +15,14 @@
     import { defineComponent } from 'vue'
     import JetLabel from '@/Jetstream/Label.vue'
     import JetInputError from '@/Jetstream/InputError.vue'
-    import { Money3Directive } from "v-money3";
+    import { Money3Component } from "v-money3";
 
     export default defineComponent({
         inheritAttrs: false,
         components: {
             JetLabel,
-            JetInputError
+            JetInputError,
+            money3: Money3Component,
         },
         props: {
             modelValue: String,
@@ -33,6 +39,7 @@
         emits: ['update:modelValue'],
         data() {
             return {
+                amount: 0,
                 config: {
                     masked: false,
                     prefix: this.percent ? '' : 'R$ ',
@@ -52,8 +59,13 @@
                 },
             }
         },
-        directives: { 
-            money3: Money3Directive
+        watch: {
+            modelValue(val) {
+                this.amount = val;
+            },
+            amount(val) {
+                this.$emit('update:modelValue', val);
+            },
         },
         computed: {
             classes() {
